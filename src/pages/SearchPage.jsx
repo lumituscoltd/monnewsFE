@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
 import ResultsTable from '../components/ResultsTable';
 import SearchHistory from '../components/SearchHistory';
+import TimeoutAlert from '../components/TimeoutAlert';
 import { searchAPI } from '../api/client';
 import { mockSearchResults } from '../utils/mockData';
 
@@ -11,12 +12,15 @@ const SearchPage = () => {
   const [searchParams, setSearchParams] = useState(null);
   const [error, setError] = useState(null);
   const [isHistoryMode, setIsHistoryMode] = useState(false);
+  const [performanceInfo, setPerformanceInfo] = useState(null);
+  const [showTimeoutAlert, setShowTimeoutAlert] = useState(false);
 
   const handleSearch = async (formData) => {
     setIsLoading(true);
     setSearchParams(formData);
     setError(null);
     setIsHistoryMode(false);
+    setShowTimeoutAlert(false);
 
     try {
       console.log('🔍 Calling API...', {
@@ -42,6 +46,7 @@ const SearchPage = () => {
             const sessionResults = await searchAPI.getSessionResults(response.session_id);
             console.log('✅ Session Results:', sessionResults);
             setResults(sessionResults.results || []);
+            setPerformanceInfo(sessionResults.performance_info || null);
           } catch (err) {
             console.error('❌ Failed to get session results:', err);
             setError('Không thể lấy kết quả tìm kiếm');
@@ -51,7 +56,14 @@ const SearchPage = () => {
       
     } catch (err) {
       console.error('❌ Search failed:', err);
-      setError(err.message);
+      
+      // Check if it's a timeout error
+      if (err.message.includes('timeout') || err.message.includes('Timeout')) {
+        setShowTimeoutAlert(true);
+        setError('Tìm kiếm bị timeout sau 30 giây');
+      } else {
+        setError(err.message);
+      }
       
       // Fallback to mock data on error
       let filteredResults = [...mockSearchResults];
@@ -82,16 +94,27 @@ const SearchPage = () => {
     setIsHistoryMode(true);
   };
 
+  const handleRetrySearch = () => {
+    if (searchParams) {
+      setShowTimeoutAlert(false);
+      handleSearch(searchParams);
+    }
+  };
+
+  const handleDismissTimeout = () => {
+    setShowTimeoutAlert(false);
+  };
+
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8">
       {/* Hero Section */}
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
-          Tìm kiếm & Thu thập tài liệu
+          Tìm kiếm thông tin
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Hệ thống tìm kiếm thông tin, hỗ trợ đa nguồn và đa ngôn ngữ.
-                  </p>
+        {/* <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Hệ thống thu thập thông tin tự động
+        </p> */}
       </div>
 
       {/* Search Panel & History */}
@@ -130,8 +153,16 @@ const SearchPage = () => {
         </div>
       )}
 
+      {/* Timeout Alert */}
+      {showTimeoutAlert && (
+        <TimeoutAlert 
+          onRetry={handleRetrySearch}
+          onDismiss={handleDismissTimeout}
+        />
+      )}
+
       {/* Error State */}
-      {error && !isLoading && (
+      {error && !isLoading && !showTimeoutAlert && (
         <div className="max-w-4xl mx-auto mb-8">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 fade-in">
             <div className="flex items-center">
@@ -155,8 +186,12 @@ const SearchPage = () => {
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-12 fade-in">
           <div className="spinner w-16 h-16 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-          <p className="text-lg font-semibold text-gray-600">Đang tìm kiếm tài liệu...</p>
-          <p className="text-sm text-gray-500 mt-2">Đang kết nối với server backend...</p>
+          <p className="text-lg font-semibold text-gray-600">Đang thu thập thông tin...</p>
+          <p className="text-sm text-gray-500 mt-2">Hệ thống đang tìm kiếm và phân tích tài liệu...</p>
+          <div className="mt-4 w-64 bg-gray-200 rounded-full h-2">
+            <div className="bg-primary h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">Đảm bảo tối thiểu 10 kết quả chất lượng cao</p>
         </div>
       )}
 
@@ -164,7 +199,11 @@ const SearchPage = () => {
       {!isLoading && results.length > 0 && (
         <div className="max-w-7xl mx-auto">
           {console.log('🎨 Rendering ResultsTable with', results.length, 'results')}
-          <ResultsTable results={results} searchParams={searchParams} />
+          <ResultsTable 
+            results={results} 
+            searchParams={searchParams} 
+            performanceInfo={performanceInfo}
+          />
         </div>
       )}
       
@@ -192,10 +231,10 @@ const SearchPage = () => {
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Sẵn sàng tìm kiếm
+            Sẵn sàng thu thập thông tin
           </h3>
           <p className="text-gray-500">
-            Nhập từ khóa và nhấn "Bắt đầu tìm kiếm" để bắt đầu
+            Nhập prompt để bắt đầu thu thập thông tin với 7 loại thông tin chi tiết
           </p>
         </div>
       )}

@@ -63,6 +63,86 @@
   animation: fadeIn 0.5s ease-out;
 }
 
+/* Enhanced search components */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-10 {
+  display: -webkit-box;
+  -webkit-line-clamp: 10;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Table row hover effect */
+.table-row-hover:hover {
+  @apply bg-gray-50;
+}
+
+/* Performance dashboard animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Criteria compliance progress bar */
+.progress-bar {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #1f2937;
+}
+
+/* Enhanced search panel */
+.enhanced-search-panel {
+  @apply bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200;
+}
+
+/* Document type badges */
+.document-badge {
+  @apply inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium;
+}
+
+/* Criteria compliance indicators */
+.criteria-met {
+  @apply bg-green-100 text-green-800;
+}
+
+.criteria-partial {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.criteria-failed {
+  @apply bg-red-100 text-red-800;
+}
+
 /* Table hover effect */
 .table-row-hover {
   @apply hover:bg-primary/5 transition-colors duration-150 cursor-pointer;

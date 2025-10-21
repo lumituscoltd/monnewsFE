@@ -4,7 +4,7 @@ const SearchPanel = ({ onSearch, isLoading }) => {
   const [formData, setFormData] = useState({
     keyword: '',
     criteria: '',
-    search_pages: 1,
+    search_pages: 10,
     target_languages: ['VN', 'EN']
   });
 
@@ -37,7 +37,7 @@ const SearchPanel = ({ onSearch, isLoading }) => {
     setFormData({
       keyword: '',
       criteria: '',
-      search_pages: 1,
+      search_pages: 10,
       target_languages: ['VN', 'EN']
     });
   };
@@ -58,95 +58,25 @@ const SearchPanel = ({ onSearch, isLoading }) => {
             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-secondary">Tìm kiếm tài liệu</h2>
+        <h2 className="text-2xl font-bold text-secondary">Thu thập thông tin</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Keyword Input */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Prompt Input */}
         <div>
           <label htmlFor="keyword" className="block text-sm font-semibold text-gray-700 mb-2">
-            Từ khóa tìm kiếm <span className="text-red-500">*</span>
+            Nhập prompt tìm kiếm <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
+          <textarea
             id="keyword"
             name="keyword"
             value={formData.keyword}
             onChange={handleChange}
-            placeholder="Nhập từ khóa cần tìm..."
-            className="input-field"
-            required
-          />
-        </div>
-
-        {/* Target Languages Multi-select */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Ngôn ngữ tìm kiếm (chọn nhiều)
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {[
-              { code: 'VN', label: '🇻🇳 Tiếng Việt' },
-              { code: 'EN', label: '🇺🇸 English' },
-              { code: 'ZH', label: '🇨🇳 中文' },
-              { code: 'JA', label: '🇯🇵 日本語' },
-              { code: 'KO', label: '🇰🇷 한국어' },
-              { code: 'RU', label: '🇷🇺 Русский' }
-            ].map(lang => (
-              <label key={lang.code} className="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.target_languages.includes(lang.code)}
-                  onChange={() => handleLanguageToggle(lang.code)}
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                />
-                <span className="text-sm">{lang.label}</span>
-              </label>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Mặc định: Tiếng Việt + English. Keyword sẽ tự động dịch sang các ngôn ngữ được chọn.
-          </p>
-        </div>
-
-        {/* Search Pages */}
-        <div>
-          <label htmlFor="search_pages" className="block text-sm font-semibold text-gray-700 mb-2">
-            Số trang mỗi engine (1-5)
-          </label>
-          <input
-            type="number"
-            id="search_pages"
-            name="search_pages"
-            value={formData.search_pages}
-            onChange={handleChange}
-            min="1"
-            max="5"
-            className="input-field"
-            placeholder="Mặc định: 1"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Tìm trên cả 4 engines: Google, Bing, DuckDuckGo, Baidu
-          </p>
-        </div>
-
-        {/* Content Criteria */}
-        <div>
-          <label htmlFor="criteria" className="block text-sm font-semibold text-gray-700 mb-2">
-            Tiêu chí lọc nội dung <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="criteria"
-            name="criteria"
-            value={formData.criteria}
-            onChange={handleChange}
-            placeholder="Ví dụ: tài liệu liên quan đến ứng dụng AI trong quốc phòng..."
+            placeholder="Ví dụ: Tìm kiếm tài liệu về trí tuệ nhân tạo trong quốc phòng, ứng dụng AI trong quân sự, công nghệ tự động hóa..."
             rows="3"
             className="input-field resize-none"
+            required
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Bắt buộc nhập để AI lọc kết quả chính xác
-          </p>
         </div>
 
         {/* Action Buttons */}
@@ -174,7 +104,7 @@ const SearchPanel = ({ onSearch, isLoading }) => {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <span>Đang tìm kiếm...</span>
+                <span>Đang thu thập thông tin...</span>
               </>
             ) : (
               <>
@@ -189,7 +119,7 @@ const SearchPanel = ({ onSearch, isLoading }) => {
                 >
                   <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <span>Bắt đầu tìm kiếm</span>
+                <span>Bắt đầu thu thập</span>
               </>
             )}
           </button>
@@ -200,7 +130,7 @@ const SearchPanel = ({ onSearch, isLoading }) => {
             disabled={isLoading}
             className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Xóa bộ lọc
+            Xóa prompt
           </button>
         </div>
       </form>

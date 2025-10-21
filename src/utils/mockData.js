@@ -1,4 +1,4 @@
-// Mock data cho kết quả tìm kiếm
+// Mock data cho kết quả tìm kiếm với đầy đủ 7 loại thông tin bắt buộc
 export const mockSearchResults = [
   {
     id: 1,
@@ -8,6 +8,29 @@ export const mockSearchResults = [
     search_engine: "Google",
     file_path: null,
     file_type: "online",
+    // 7 loại thông tin bắt buộc
+    document_type: "online",
+    publication_date: "15/03/2024",
+    author: "Dr. John Smith, MIT",
+    criteria_score: "4/5",
+    criteria_percentage: 0.8,
+    criteria_met: ["artificial intelligence", "defense applications", "autonomous systems", "threat detection"],
+    criteria_not_met: ["cybersecurity"],
+    summary: "Nghiên cứu toàn diện về ứng dụng trí tuệ nhân tạo trong lĩnh vực quốc phòng, bao gồm các hệ thống tự động, phát hiện mối đe dọa và lập kế hoạch chiến lược. Tài liệu cung cấp cái nhìn tổng quan về các công nghệ AI hiện đại được sử dụng trong quân sự.",
+    relevant_quotes: [
+      {
+        criterion: "artificial intelligence",
+        quote: "AI systems have revolutionized defense applications by enabling autonomous decision-making in complex battlefield scenarios."
+      },
+      {
+        criterion: "defense applications", 
+        quote: "The integration of machine learning algorithms in defense systems has significantly improved threat detection capabilities."
+      }
+    ],
+    highlighted_content: "AI systems have <mark>revolutionized</mark> defense applications by enabling <mark>autonomous</mark> decision-making in complex battlefield scenarios.",
+    source_verification: "Verified academic source from MIT",
+    content_accuracy_score: 0.95,
+    relevance_score: 8.5,
     relevant_content: "This paper presents a comprehensive survey of AI applications in defense, covering autonomous systems, threat detection, and strategic planning...",
     download_status: "N/A",
     created_at: "2025-10-08 10:30:45"
@@ -20,6 +43,29 @@ export const mockSearchResults = [
     search_engine: "Baidu",
     file_path: "/var/www/documents/ai_military_cn.pdf",
     file_type: "pdf",
+    // 7 loại thông tin bắt buộc
+    document_type: "pdf",
+    publication_date: "22/01/2024",
+    author: "中国军事科学院",
+    criteria_score: "3/5",
+    criteria_percentage: 0.6,
+    criteria_met: ["artificial intelligence", "military applications", "intelligent reconnaissance"],
+    criteria_not_met: ["cybersecurity", "autonomous systems"],
+    summary: "Nghiên cứu sâu về vai trò quan trọng của công nghệ trí tuệ nhân tạo trong các ứng dụng quân sự hiện đại, bao gồm trinh sát thông minh và hệ thống hỗ trợ ra quyết định chỉ huy.",
+    relevant_quotes: [
+      {
+        criterion: "artificial intelligence",
+        quote: "人工智能技术在军事领域的应用正在改变现代战争的面貌，特别是在情报收集和分析方面。"
+      },
+      {
+        criterion: "military applications",
+        quote: "智能侦察系统能够实时分析大量数据，为指挥官提供准确的战场态势感知。"
+      }
+    ],
+    highlighted_content: "人工智能技术在<mark>军事领域</mark>的应用正在改变现代战争的面貌，特别是在<mark>情报收集</mark>和分析方面。",
+    source_verification: "Verified from Chinese Military Academy",
+    content_accuracy_score: 0.92,
+    relevance_score: 7.8,
     relevant_content: "本文深入探讨了人工智能技术在现代军事应用中的关键作用，包括智能侦察、指挥决策支持系统等方面的最新进展...",
     download_status: "downloaded",
     created_at: "2025-10-08 11:15:22"

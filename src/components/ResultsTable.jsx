@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { searchAPI } from '../api/client';
+import PerformanceDashboard from './PerformanceDashboard';
+import CriteriaCompliance from './CriteriaCompliance';
+import DocumentInfo from './DocumentInfo';
+import SummaryDisplay from './SummaryDisplay';
 
-const ResultsTable = ({ results, searchParams }) => {
+const ResultsTable = ({ results, searchParams, performanceInfo }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
   const [hoveredContent, setHoveredContent] = useState(null);
+  const [expandedResult, setExpandedResult] = useState(null);
   const itemsPerPage = 10;
 
   // Pagination logic
@@ -15,6 +20,51 @@ const ResultsTable = ({ results, searchParams }) => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = results.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(results.length / itemsPerPage);
+
+  // Helper functions for enhanced display
+  const getFileTypeBadge = (fileType) => {
+    const typeMap = {
+      'pdf': 'bg-red-100 text-red-800',
+      'doc': 'bg-blue-100 text-blue-800',
+      'docx': 'bg-blue-100 text-blue-800',
+      'ppt': 'bg-orange-100 text-orange-800',
+      'pptx': 'bg-orange-100 text-orange-800',
+      'xlsx': 'bg-green-100 text-green-800',
+      'online': 'bg-purple-100 text-purple-800',
+      'unknown': 'bg-gray-100 text-gray-800'
+    };
+    return typeMap[fileType?.toLowerCase()] || typeMap['unknown'];
+  };
+
+  const getFileIcon = (fileType) => {
+    const iconMap = {
+      'pdf': '📄',
+      'doc': '📝',
+      'docx': '📝',
+      'ppt': '📊',
+      'pptx': '📊',
+      'xlsx': '📈',
+      'online': '🌐',
+      'unknown': '📄'
+    };
+    return iconMap[fileType?.toLowerCase()] || iconMap['unknown'];
+  };
+
+  const getCriteriaComplianceColor = (percentage) => {
+    if (percentage >= 0.8) return 'text-green-600';
+    if (percentage >= 0.6) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const formatPerformanceStatus = (status) => {
+    const statusMap = {
+      'GOOD': { text: 'Tốt', color: 'text-green-600' },
+      'SLOW': { text: 'Chậm', color: 'text-yellow-600' },
+      'TIMEOUT': { text: 'Timeout', color: 'text-red-600' },
+      'INSUFFICIENT_RESULTS': { text: 'Ít kết quả', color: 'text-orange-600' }
+    };
+    return statusMap[status] || { text: 'N/A', color: 'text-gray-600' };
+  };
 
   const handleExportExcel = () => {
     if (results.length === 0) {
@@ -151,27 +201,7 @@ const ResultsTable = ({ results, searchParams }) => {
     window.open(url, '_blank');
   };
 
-  const getFileIcon = (fileType) => {
-    const icons = {
-      'pdf': '📄',
-      'docx': '📝',
-      'pptx': '📊',
-      'xlsx': '📈',
-      'online': '🌐'
-    };
-    return icons[fileType] || '📁';
-  };
 
-  const getFileTypeBadge = (fileType) => {
-    const colors = {
-      'pdf': 'bg-red-100 text-red-800',
-      'docx': 'bg-blue-100 text-blue-800',
-      'pptx': 'bg-orange-100 text-orange-800',
-      'xlsx': 'bg-green-100 text-green-800',
-      'online': 'bg-purple-100 text-purple-800'
-    };
-    return colors[fileType] || 'bg-gray-100 text-gray-800';
-  };
 
   const toggleSelectDocument = (docId) => {
     const newSelected = new Set(selectedDocuments);
@@ -261,9 +291,8 @@ const ResultsTable = ({ results, searchParams }) => {
           </div>
         </div>
 
-        {/* Export & Download Buttons */}
+        {/* Download Selected Button */}
         <div className="flex items-center space-x-3">
-          {/* Download Selected Button */}
           {selectedDocuments.size > 0 && (
             <button
               onClick={handleDownloadSelected}
@@ -273,7 +302,7 @@ const ResultsTable = ({ results, searchParams }) => {
               <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                 <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
-              <span>Tải {selectedDocuments.size} file</span>
+              <span>Tải {selectedDocuments.size} tài liệu đã chọn</span>
             </button>
           )}
 
@@ -343,6 +372,9 @@ const ResultsTable = ({ results, searchParams }) => {
         </div>
       </div>
 
+      {/* Performance Dashboard */}
+      <PerformanceDashboard performanceInfo={performanceInfo} resultsCount={results.length} />
+
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -356,14 +388,14 @@ const ResultsTable = ({ results, searchParams }) => {
                   className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer"
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">STT</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tiêu đề</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Loại</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nguồn</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ngôn ngữ</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nội dung</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Chọn</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tên tài liệu</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Loại tài liệu</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Link nguồn</th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ngày xuất bản</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Hành động</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tác giả</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Chỉ số đáp ứng</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tóm tắt nội dung</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -377,79 +409,45 @@ const ResultsTable = ({ results, searchParams }) => {
                     className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer"
                   />
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                  {indexOfFirstItem + index + 1}
-                </td>
                 <td className="px-4 py-4 text-sm">
                   <div className="font-semibold text-gray-900 hover:text-primary transition-colors max-w-md">
-                    {result.title}
+                    {result.title || 'N/A'}
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm">
-                  <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${getFileTypeBadge(result.file_type)}`}>
-                    <span>{getFileIcon(result.file_type)}</span>
-                    <span>{(result.file_type || 'unknown').toUpperCase()}</span>
+                  <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${getFileTypeBadge(result.document_type)}`}>
+                    <span>{getFileIcon(result.document_type)}</span>
+                    <span>{(result.document_type || 'unknown').toUpperCase()}</span>
                   </span>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {result.search_engine || 'Unknown'}
-                  </span>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    {result.language || 'Unknown'}
-                  </span>
-                </td>
-                <td 
-                  className="px-4 py-4 text-sm text-gray-600 max-w-md relative"
-                  onMouseEnter={() => setHoveredContent(result.id)}
-                  onMouseLeave={() => setHoveredContent(null)}
-                >
-                  <div className="line-clamp-10 cursor-help leading-relaxed">
-                    {result.relevant_content || 'N/A'}
-                  </div>
-                  
-                  {/* Tooltip with full AI analysis */}
-                  {hoveredContent === result.id && result.relevant_content && (
-                    <div className="absolute z-50 left-0 top-full mt-2 w-[600px] bg-gray-900 text-white text-sm p-5 rounded-lg shadow-2xl border border-gray-700">
-                      <div className="font-bold mb-3 text-base text-yellow-400">🤖 Phân tích AI đầy đủ:</div>
-                      <div className="whitespace-pre-wrap max-h-96 overflow-y-auto leading-relaxed">
-                        {result.relevant_content}
-                      </div>
-                      <div className="absolute -top-2 left-8 w-4 h-4 bg-gray-900 border-l border-t border-gray-700 transform rotate-45"></div>
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {result.created_at ? new Date(result.created_at).toLocaleString('vi-VN') : 'N/A'}
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm">
-                  {result.file_path && result.download_status === 'downloaded' ? (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleDownloadFile(result)}
-                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span>Tải về</span>
-                      </button>
-                    </div>
-                  ) : result.url ? (
-                    <button
-                      onClick={() => handleViewOnline(result.url)}
-                      className="inline-flex items-center space-x-1 px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 font-medium transition-colors"
+                <td className="px-4 py-4 text-sm">
+                  {result.url ? (
+                    <a 
+                      href={result.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm break-all"
+                      title={result.url}
                     >
-                      <svg className="w-4 h-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                        <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                      </svg>
-                      <span>Mở link</span>
-                    </button>
+                      {result.url.length > 50 ? `${result.url.substring(0, 50)}...` : result.url}
+                    </a>
                   ) : (
-                    <span className="text-gray-400 text-xs">N/A</span>
+                    <span className="text-sm text-gray-500">N/A</span>
                   )}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {result.publication_date || 'N/A'}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 max-w-xs">
+                  <div className="truncate" title={result.author || 'N/A'}>
+                    {result.author || 'N/A'}
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-sm">
+                  <CriteriaCompliance result={result} />
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-600 max-w-md">
+                  <SummaryDisplay result={result} />
                 </td>
               </tr>
             ))}
